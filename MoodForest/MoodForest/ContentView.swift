@@ -8,17 +8,24 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject var auth = AuthViewModel()
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        if auth.isLoading {
+            ProgressView("Loading...")
+        } else if let _ = auth.user {
+            if auth.isProfileComplete {
+                MainAppView().environmentObject(auth)
+            } else {
+                QuestionnaireView(profileCompleted: $auth.isProfileComplete)
+            }
+        } else {
+            LoginView().environmentObject(auth)
         }
-        .padding()
     }
+
 }
 
-#Preview {
-    ContentView()
-}
+//#Preview {
+//    ContentView()
+//}
