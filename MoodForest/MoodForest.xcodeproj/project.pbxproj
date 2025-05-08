@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		613CFC962DCBDDB70010430C /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 613CFC952DCBDDB70010430C /* FirebaseAuth */; };
-		613CFC982DCBDDB70010430C /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 613CFC972DCBDDB70010430C /* FirebaseCore */; };
-		613CFC9A2DCBDDB70010430C /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 613CFC992DCBDDB70010430C /* FirebaseFirestore */; };
+		61561A1D2DCD4788008F12A0 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 61561A1C2DCD4788008F12A0 /* FirebaseAuth */; };
+		61561A1F2DCD4788008F12A0 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 61561A1E2DCD4788008F12A0 /* FirebaseCore */; };
+		61561A212DCD4788008F12A0 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 61561A202DCD4788008F12A0 /* FirebaseFirestore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,9 +35,22 @@
 		613CFC652DCBB02F0010430C /* MoodForestUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MoodForestUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		61561A132DCD43F4008F12A0 /* Exceptions for "MoodForest" folder in "MoodForest" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 613CFC4D2DCBB02C0010430C /* MoodForest */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		613CFC502DCBB02C0010430C /* MoodForest */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				61561A132DCD43F4008F12A0 /* Exceptions for "MoodForest" folder in "MoodForest" target */,
+			);
 			path = MoodForest;
 			sourceTree = "<group>";
 		};
@@ -58,9 +71,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				613CFC982DCBDDB70010430C /* FirebaseCore in Frameworks */,
-				613CFC962DCBDDB70010430C /* FirebaseAuth in Frameworks */,
-				613CFC9A2DCBDDB70010430C /* FirebaseFirestore in Frameworks */,
+				61561A1F2DCD4788008F12A0 /* FirebaseCore in Frameworks */,
+				61561A1D2DCD4788008F12A0 /* FirebaseAuth in Frameworks */,
+				61561A212DCD4788008F12A0 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,9 +134,9 @@
 			);
 			name = MoodForest;
 			packageProductDependencies = (
-				613CFC952DCBDDB70010430C /* FirebaseAuth */,
-				613CFC972DCBDDB70010430C /* FirebaseCore */,
-				613CFC992DCBDDB70010430C /* FirebaseFirestore */,
+				61561A1C2DCD4788008F12A0 /* FirebaseAuth */,
+				61561A1E2DCD4788008F12A0 /* FirebaseCore */,
+				61561A202DCD4788008F12A0 /* FirebaseFirestore */,
 			);
 			productName = MoodForest;
 			productReference = 613CFC4E2DCBB02C0010430C /* MoodForest.app */;
@@ -208,7 +221,7 @@
 			mainGroup = 613CFC452DCBB02C0010430C;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				613CFC942DCBDDB70010430C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				61561A1B2DCD4788008F12A0 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 613CFC4F2DCBB02C0010430C /* Products */;
@@ -412,6 +425,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MoodForest/Info.plist;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to personalize your experience.\n";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -422,6 +437,8 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				NEW_SETTING = "";
+				NEW_SETTING3333 = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.mariia.MoodForest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -439,6 +456,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MoodForest/Info.plist;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to personalize your experience.\n";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -449,6 +468,8 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				NEW_SETTING = "";
+				NEW_SETTING3333 = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.mariia.MoodForest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -567,7 +588,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		613CFC942DCBDDB70010430C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+		61561A1B2DCD4788008F12A0 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
 			requirement = {
@@ -578,19 +599,19 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		613CFC952DCBDDB70010430C /* FirebaseAuth */ = {
+		61561A1C2DCD4788008F12A0 /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 613CFC942DCBDDB70010430C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = 61561A1B2DCD4788008F12A0 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAuth;
 		};
-		613CFC972DCBDDB70010430C /* FirebaseCore */ = {
+		61561A1E2DCD4788008F12A0 /* FirebaseCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 613CFC942DCBDDB70010430C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = 61561A1B2DCD4788008F12A0 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseCore;
 		};
-		613CFC992DCBDDB70010430C /* FirebaseFirestore */ = {
+		61561A202DCD4788008F12A0 /* FirebaseFirestore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 613CFC942DCBDDB70010430C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = 61561A1B2DCD4788008F12A0 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
 		};
 /* End XCSwiftPackageProductDependency section */
