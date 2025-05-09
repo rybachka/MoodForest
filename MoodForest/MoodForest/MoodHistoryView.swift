@@ -1,10 +1,3 @@
-//
-//  MoodHistoryView.swift
-//  MoodForest
-//
-//  Created by Mariia Rybak on 09.05.2025.
-//
-
 import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
@@ -23,7 +16,6 @@ struct MoodHistoryView: View {
     @State private var showDeleteAlert = false
     @State private var entryToDelete: MoodEntry?
 
-
     var body: some View {
         NavigationStack {
             List {
@@ -39,6 +31,7 @@ struct MoodHistoryView: View {
 
                             Spacer()
 
+                            // Edit button
                             Button {
                                 selectedEntry = entry
                                 showEditSheet = true
@@ -46,15 +39,17 @@ struct MoodHistoryView: View {
                                 Image(systemName: "pencil")
                                     .foregroundColor(.blue)
                             }
+                            .buttonStyle(BorderlessButtonStyle()) // prevents conflict in List rows
 
-                            Button("Delete", role: .destructive) {
+                            // Delete button
+                            Button {
                                 entryToDelete = entry
                                 showDeleteAlert = true
+                            } label: {
+                                Image(systemName: "trash")
+                                    .foregroundColor(.red)
                             }
-                        } label: {
-                            Image(systemName: "ellipsis.circle")
-                                .imageScale(.large)
-                        
+                            .buttonStyle(BorderlessButtonStyle()) // ensures tap only triggers alert
                         }
 
                         ForEach(entry.moods.sorted(by: { $0.key < $1.key }), id: \.key) { mood, value in
@@ -65,23 +60,23 @@ struct MoodHistoryView: View {
                     .padding(.vertical, 8)
                 }
             }
+
             .navigationTitle("Mood History")
             .onAppear(perform: loadMoods)
             .sheet(item: $selectedEntry) { entry in
                 EditMoodView(entry: entry) {
-                    loadMoods() // refresh after edit
+                    loadMoods() // Refresh after edit
                 }
             }
-        }
-        .alert("Delete Mood Entry", isPresented: $showDeleteAlert, presenting: entryToDelete) { entry in
-            Button("Delete", role: .destructive) {
-                deleteMood(entry)
+            .alert("Delete Mood Entry", isPresented: $showDeleteAlert, presenting: entryToDelete) { entry in
+                Button("Delete", role: .destructive) {
+                    deleteMood(entry)
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: { _ in
+                Text("Are you sure you want to delete this mood entry? This cannot be undone.")
             }
-            Button("Cancel", role: .cancel) {}
-        } message: { _ in
-            Text("Are you sure you want to delete this mood entry? This cannot be undone.")
         }
-
     }
 
     func loadMoods() {

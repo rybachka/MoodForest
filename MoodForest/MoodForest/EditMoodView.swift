@@ -49,7 +49,6 @@ struct EditMoodView: View {
         }
     }
 
-    // Adjust sliders to ensure total stays 100
     func updateSliders(for adjustedMood: String, to newValue: Double) {
         var newMoodValues = moodValues
         newMoodValues[adjustedMood] = newValue
@@ -77,7 +76,7 @@ struct EditMoodView: View {
         guard let uid = Auth.auth().currentUser?.uid else { return }
 
         let updatedData: [String: Any] = [
-            "timestamp": Timestamp(date: entry.timestamp),
+            "timestamp": Timestamp(date: entry.timestamp), // use original timestamp
             "moods": moodValues.mapValues { Int($0) }
         ]
 
