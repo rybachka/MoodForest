@@ -8,20 +8,29 @@ struct EditMoodView: View {
     var onSave: () -> Void
 
     @State private var moodValues: [String: Double] = [:]
+    @State private var note: String = ""
     @State private var showSuccessMessage = false
 
     var body: some View {
         NavigationStack {
             VStack {
                 Form {
-                    ForEach(moodValues.keys.sorted(), id: \.self) { mood in
-                        VStack(alignment: .leading) {
-                            Text("\(mood.capitalized): \(Int(moodValues[mood]!))")
-                            Slider(value: Binding(
-                                get: { moodValues[mood]! },
-                                set: { newValue in updateSliders(for: mood, to: newValue) }
-                            ), in: 0...100)
+                    Section(header: Text("Mood Levels")) {
+                        ForEach(moodValues.keys.sorted(), id: \.self) { mood in
+                            VStack(alignment: .leading) {
+                                Text("\(mood.capitalized): \(Int(moodValues[mood]!))")
+                                Slider(value: Binding(
+                                    get: { moodValues[mood]! },
+                                    set: { newValue in updateSliders(for: mood, to: newValue) }
+                                ), in: 0...100)
+                            }
                         }
+                    }
+
+                    Section(header: Text("Note")) {
+                        TextEditor(text: $note)
+                            .frame(height: 100)
+                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.4)))
                     }
 
                     Button("Save Changes") {
@@ -45,6 +54,7 @@ struct EditMoodView: View {
             .navigationTitle("Edit Mood")
             .onAppear {
                 moodValues = entry.moods.mapValues { Double($0) }
+                note = entry.note ?? ""
             }
         }
     }
@@ -75,10 +85,14 @@ struct EditMoodView: View {
     func saveChanges() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
 
-        let updatedData: [String: Any] = [
-            "timestamp": Timestamp(date: entry.timestamp), // use original timestamp
+        var updatedData: [String: Any] = [
+            "timestamp": Timestamp(date: entry.timestamp), // keep original time
             "moods": moodValues.mapValues { Int($0) }
         ]
+
+        if !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            updatedData["note"] = note
+        }
 
         Firestore.firestore()
             .collection("users").document(uid)

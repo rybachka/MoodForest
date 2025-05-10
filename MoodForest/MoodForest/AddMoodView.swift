@@ -9,6 +9,7 @@ struct AddMoodView: View {
         "bored": 20
     ]
     
+    @State private var note: String = ""
     private let moodOrder = ["joy", "calm", "inspire", "angry", "sad", "bored"]
     @Environment(\.dismiss) var dismiss
     @State private var showSuccessMessage = false
@@ -16,7 +17,6 @@ struct AddMoodView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                // ✅ Success message
                 if showSuccessMessage {
                     Text("✅ Your mood was saved successfully!")
                         .foregroundColor(.green)
@@ -49,6 +49,14 @@ struct AddMoodView: View {
                             moodSlider("bored")
                         }
 
+                        Group {
+                            Text("Note (optional)")
+                                .font(.headline)
+                            TextEditor(text: $note)
+                                .frame(height: 100)
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.4)))
+                        }
+
                         Button(action: saveMood) {
                             Text("Save Mood")
                                 .fontWeight(.semibold)
@@ -66,7 +74,6 @@ struct AddMoodView: View {
         }
     }
 
-    
     func moodSlider(_ mood: String) -> some View {
         VStack(alignment: .leading) {
             Text("\(mood.capitalized): \(Int(moodValues[mood]!))")
@@ -76,7 +83,7 @@ struct AddMoodView: View {
             ), in: 0...100)
         }
     }
-    
+
     func updateSliders(for adjustedMood: String, to newValue: Double) {
         var newMoodValues = moodValues
         newMoodValues[adjustedMood] = newValue
@@ -106,10 +113,14 @@ struct AddMoodView: View {
         let db = Firestore.firestore()
         let moodData = moodValues.mapValues { Int($0) }
 
-        let entry: [String: Any] = [
+        var entry: [String: Any] = [
             "timestamp": Timestamp(date: Date()),
             "moods": moodData
         ]
+
+        if !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            entry["note"] = note
+        }
 
         db.collection("users")
             .document(user.uid)
@@ -121,12 +132,10 @@ struct AddMoodView: View {
                     print("✅ Mood saved to Firestore")
                     showSuccessMessage = true
 
-                    // Auto-dismiss after 3 seconds
                     DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                         dismiss()
                     }
                 }
             }
     }
-
 }

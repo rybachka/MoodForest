@@ -2,10 +2,19 @@ import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
 
-struct MoodEntry: Identifiable {
+struct MoodEntry: Identifiable, Hashable {
     var id: String
     var timestamp: Date
     var moods: [String: Int]
+    var note: String?
+
+    static func == (lhs: MoodEntry, rhs: MoodEntry) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
 struct MoodHistoryView: View {
@@ -31,7 +40,6 @@ struct MoodHistoryView: View {
 
                             Spacer()
 
-                            // Edit button
                             Button {
                                 selectedEntry = entry
                                 showEditSheet = true
@@ -39,9 +47,8 @@ struct MoodHistoryView: View {
                                 Image(systemName: "pencil")
                                     .foregroundColor(.blue)
                             }
-                            .buttonStyle(BorderlessButtonStyle()) // prevents conflict in List rows
+                            .buttonStyle(BorderlessButtonStyle())
 
-                            // Delete button
                             Button {
                                 entryToDelete = entry
                                 showDeleteAlert = true
@@ -49,23 +56,30 @@ struct MoodHistoryView: View {
                                 Image(systemName: "trash")
                                     .foregroundColor(.red)
                             }
-                            .buttonStyle(BorderlessButtonStyle()) // ensures tap only triggers alert
+                            .buttonStyle(BorderlessButtonStyle())
                         }
 
                         ForEach(entry.moods.sorted(by: { $0.key < $1.key }), id: \.key) { mood, value in
                             Text("\(mood.capitalized): \(value)")
                                 .font(.subheadline)
                         }
+
+                        if let note = entry.note, !note.isEmpty {
+                            Text("📝 \(note)")
+                                .font(.footnote)
+                                .foregroundColor(.gray)
+                                .padding(.top, 4)
+                        }
+
                     }
                     .padding(.vertical, 8)
                 }
             }
-
             .navigationTitle("Mood History")
             .onAppear(perform: loadMoods)
             .sheet(item: $selectedEntry) { entry in
                 EditMoodView(entry: entry) {
-                    loadMoods() // Refresh after edit
+                    loadMoods()
                 }
             }
             .alert("Delete Mood Entry", isPresented: $showDeleteAlert, presenting: entryToDelete) { entry in
@@ -88,7 +102,10 @@ struct MoodHistoryView: View {
                     let data = doc.data()
                     guard let ts = data["timestamp"] as? Timestamp,
                           let moods = data["moods"] as? [String: Int] else { return nil }
-                    return MoodEntry(id: doc.documentID, timestamp: ts.dateValue(), moods: moods)
+                    let note = data["note"] as? String
+                    return MoodEntry(id: doc.documentID, timestamp: ts.dateValue(), moods: moods, note: note)
+
+                    
                 }
                 isLoading = false
             }
