@@ -4,13 +4,18 @@ import FirebaseFirestore
 
 struct AddMoodView: View {
     @State private var moodValues: [String: Double] = [
-        "joy": 20, "calm": 20, "inspire": 20,
-        "angry": 10, "sad": 10,
-        "bored": 20
+        // Positive
+        "joy": 12.5, "calm": 12.5, "inspired": 12.5, "inLove": 12.5,
+        "gratitude": 12.5, "pride": 12.5, "hopeful": 12.5, "energetic": 12.5,
+        // Negative
+        "sadness": 0, "anger": 0, "fear": 0, "anxiety": 0,
+        "loneliness": 0, "tiredness": 0, "disappointment": 0, "guilt": 0,
+        // Neutral
+        "boredom": 0, "confusion": 0, "emptiness": 0, "apathy": 0,
+        "surprised": 0, "mixedFeelings": 0
     ]
     
     @State private var note: String = ""
-    private let moodOrder = ["joy", "calm", "inspire", "angry", "sad", "bored"]
     @Environment(\.dismiss) var dismiss
     @State private var showSuccessMessage = false
 
@@ -35,23 +40,38 @@ struct AddMoodView: View {
                             Text("Positive").font(.headline).foregroundColor(.gray)
                             moodSlider("joy")
                             moodSlider("calm")
-                            moodSlider("inspire")
+                            moodSlider("inspired")
+                            moodSlider("inLove")
+                            moodSlider("gratitude")
+                            moodSlider("pride")
+                            moodSlider("hopeful")
+                            moodSlider("energetic")
                         }
 
                         Group {
                             Text("Negative").font(.headline).foregroundColor(.gray)
-                            moodSlider("angry")
-                            moodSlider("sad")
+                            moodSlider("sadness")
+                            moodSlider("anger")
+                            moodSlider("fear")
+                            moodSlider("anxiety")
+                            moodSlider("loneliness")
+                            moodSlider("tiredness")
+                            moodSlider("disappointment")
+                            moodSlider("guilt")
                         }
 
                         Group {
                             Text("Neutral").font(.headline).foregroundColor(.gray)
-                            moodSlider("bored")
+                            moodSlider("boredom")
+                            moodSlider("confusion")
+                            moodSlider("emptiness")
+                            moodSlider("apathy")
+                            moodSlider("surprised")
+                            moodSlider("mixedFeelings")
                         }
 
                         Group {
-                            Text("Note (optional)")
-                                .font(.headline)
+                            Text("Note (optional)").font(.headline)
                             TextEditor(text: $note)
                                 .frame(height: 100)
                                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.4)))
@@ -76,11 +96,19 @@ struct AddMoodView: View {
 
     func moodSlider(_ mood: String) -> some View {
         VStack(alignment: .leading) {
-            Text("\(mood.capitalized): \(Int(moodValues[mood]!))")
+            Text("\(formatMoodLabel(mood)): \(Int(moodValues[mood]!))")
             Slider(value: Binding(
                 get: { self.moodValues[mood]! },
                 set: { newValue in self.updateSliders(for: mood, to: newValue) }
             ), in: 0...100)
+        }
+    }
+
+    func formatMoodLabel(_ key: String) -> String {
+        switch key {
+        case "inLove": return "In Love"
+        case "mixedFeelings": return "Mixed Feelings"
+        default: return key.capitalized
         }
     }
 

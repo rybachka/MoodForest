@@ -14,41 +14,73 @@ struct EditMoodView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                Form {
-                    Section(header: Text("Mood Levels")) {
-                        ForEach(moodValues.keys.sorted(), id: \.self) { mood in
-                            VStack(alignment: .leading) {
-                                Text("\(mood.capitalized): \(Int(moodValues[mood]!))")
-                                Slider(value: Binding(
-                                    get: { moodValues[mood]! },
-                                    set: { newValue in updateSliders(for: mood, to: newValue) }
-                                ), in: 0...100)
-                            }
-                        }
-                    }
-
-                    Section(header: Text("Note")) {
-                        TextEditor(text: $note)
-                            .frame(height: 100)
-                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.4)))
-                    }
-
-                    Button("Save Changes") {
-                        saveChanges()
-                    }
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
+                if showSuccessMessage {
+                    Text("✅ Mood updated successfully!")
+                        .foregroundColor(.green)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 10)
                 }
 
-                if showSuccessMessage {
-                    Text("✅ Mood updated successfully")
-                        .foregroundColor(.green)
-                        .padding(.top, 10)
-                        .transition(.opacity)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        Text("Edit Mood")
+                            .font(.largeTitle)
+                            .bold()
+                            .padding(.top)
+
+                        Group {
+                            Text("Positive").font(.headline).foregroundColor(.gray)
+                            moodSlider("joy")
+                            moodSlider("calm")
+                            moodSlider("inspired")
+                            moodSlider("inLove")
+                            moodSlider("gratitude")
+                            moodSlider("pride")
+                            moodSlider("hopeful")
+                            moodSlider("energetic")
+                        }
+
+                        Group {
+                            Text("Negative").font(.headline).foregroundColor(.gray)
+                            moodSlider("sadness")
+                            moodSlider("anger")
+                            moodSlider("fear")
+                            moodSlider("anxiety")
+                            moodSlider("loneliness")
+                            moodSlider("tiredness")
+                            moodSlider("disappointment")
+                            moodSlider("guilt")
+                        }
+
+                        Group {
+                            Text("Neutral").font(.headline).foregroundColor(.gray)
+                            moodSlider("boredom")
+                            moodSlider("confusion")
+                            moodSlider("emptiness")
+                            moodSlider("apathy")
+                            moodSlider("surprised")
+                            moodSlider("mixedFeelings")
+                        }
+
+                        Group {
+                            Text("Note (optional)").font(.headline)
+                            TextEditor(text: $note)
+                                .frame(height: 100)
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.4)))
+                        }
+
+                        Button("Save Changes") {
+                            saveChanges()
+                        }
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                        .padding(.bottom)
+                    }
+                    .padding()
                 }
             }
             .navigationTitle("Edit Mood")
@@ -56,6 +88,24 @@ struct EditMoodView: View {
                 moodValues = entry.moods.mapValues { Double($0) }
                 note = entry.note ?? ""
             }
+        }
+    }
+
+    func moodSlider(_ mood: String) -> some View {
+        VStack(alignment: .leading) {
+            Text("\(formatMoodLabel(mood)): \(Int(moodValues[mood] ?? 0))")
+            Slider(value: Binding(
+                get: { moodValues[mood] ?? 0 },
+                set: { newValue in updateSliders(for: mood, to: newValue) }
+            ), in: 0...100)
+        }
+    }
+
+    func formatMoodLabel(_ key: String) -> String {
+        switch key {
+        case "inLove": return "In Love"
+        case "mixedFeelings": return "Mixed Feelings"
+        default: return key.capitalized
         }
     }
 
@@ -86,7 +136,7 @@ struct EditMoodView: View {
         guard let uid = Auth.auth().currentUser?.uid else { return }
 
         var updatedData: [String: Any] = [
-            "timestamp": Timestamp(date: entry.timestamp), // keep original time
+            "timestamp": Timestamp(date: entry.timestamp),
             "moods": moodValues.mapValues { Int($0) }
         ]
 
