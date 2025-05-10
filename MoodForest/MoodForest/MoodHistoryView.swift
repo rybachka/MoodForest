@@ -7,6 +7,9 @@ struct MoodEntry: Identifiable, Hashable {
     var timestamp: Date
     var moods: [String: Int]
     var note: String?
+    var positivePct: Int?
+    var negativePct: Int?
+    var neutralPct: Int?
 
     static func == (lhs: MoodEntry, rhs: MoodEntry) -> Bool {
         lhs.id == rhs.id
@@ -59,9 +62,14 @@ struct MoodHistoryView: View {
                             .buttonStyle(BorderlessButtonStyle())
                         }
 
-                        ForEach(entry.moods.sorted(by: { $0.key < $1.key }), id: \.key) { mood, value in
-                            Text("\(mood.capitalized): \(value)")
-                                .font(.subheadline)
+                        if let pos = entry.positivePct {
+                            Text("😊 Positive emotions: \(pos)%")
+                        }
+                        if let neg = entry.negativePct {
+                            Text("😟 Negative emotions: \(neg)%")
+                        }
+                        if let neu = entry.neutralPct {
+                            Text("😐 Neutral emotions: \(neu)%")
                         }
 
                         if let note = entry.note, !note.isEmpty {
@@ -70,7 +78,6 @@ struct MoodHistoryView: View {
                                 .foregroundColor(.gray)
                                 .padding(.top, 4)
                         }
-
                     }
                     .padding(.vertical, 8)
                 }
@@ -102,10 +109,15 @@ struct MoodHistoryView: View {
                     let data = doc.data()
                     guard let ts = data["timestamp"] as? Timestamp,
                           let moods = data["moods"] as? [String: Int] else { return nil }
-                    let note = data["note"] as? String
-                    return MoodEntry(id: doc.documentID, timestamp: ts.dateValue(), moods: moods, note: note)
-
-                    
+                    return MoodEntry(
+                        id: doc.documentID,
+                        timestamp: ts.dateValue(),
+                        moods: moods,
+                        note: data["note"] as? String,
+                        positivePct: data["positivePct"] as? Int,
+                        negativePct: data["negativePct"] as? Int,
+                        neutralPct: data["neutralPct"] as? Int
+                    )
                 }
                 isLoading = false
             }

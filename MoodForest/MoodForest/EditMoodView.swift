@@ -11,7 +11,7 @@ struct EditMoodView: View {
     @State private var note: String = ""
     @State private var showSuccessMessage = false
 
-    // Expand/collapse control
+    // Expand/collapse
     @State private var showPositive = true
     @State private var showNegative = false
     @State private var showNeutral = false
@@ -33,26 +33,23 @@ struct EditMoodView: View {
                             .bold()
                             .padding(.top)
 
-                        DisclosureGroup("Positive", isExpanded: $showPositive) {
+                        DisclosureGroup("Positive emotions", isExpanded: $showPositive) {
                             VStack(spacing: 12) {
                                 ForEach(positiveMoods, id: \.self, content: moodSlider)
                             }
-                        }
-                        .font(.headline)
+                        }.font(.headline)
 
-                        DisclosureGroup("Negative", isExpanded: $showNegative) {
+                        DisclosureGroup("Negative emotions", isExpanded: $showNegative) {
                             VStack(spacing: 12) {
                                 ForEach(negativeMoods, id: \.self, content: moodSlider)
                             }
-                        }
-                        .font(.headline)
+                        }.font(.headline)
 
-                        DisclosureGroup("Neutral", isExpanded: $showNeutral) {
+                        DisclosureGroup("Neutral emotions", isExpanded: $showNeutral) {
                             VStack(spacing: 12) {
                                 ForEach(neutralMoods, id: \.self, content: moodSlider)
                             }
-                        }
-                        .font(.headline)
+                        }.font(.headline)
 
                         Group {
                             Text("Note (optional)").font(.headline)
@@ -75,7 +72,6 @@ struct EditMoodView: View {
                     .padding()
                 }
             }
-            //.navigationTitle("Edit Mood")
             .onAppear {
                 moodValues = entry.moods.mapValues { Double($0) }
                 note = entry.note ?? ""
@@ -88,6 +84,7 @@ struct EditMoodView: View {
     let negativeMoods = ["sadness", "anger", "fear", "anxiety", "loneliness", "tiredness", "disappointment", "guilt"]
     let neutralMoods  = ["boredom", "confusion", "emptiness", "apathy", "surprised", "mixedFeelings"]
 
+    // MARK: - Mood slider
     func moodSlider(_ mood: String) -> some View {
         VStack(alignment: .leading) {
             Text("\(formatMoodLabel(mood)): \(Int(moodValues[mood] ?? 0))")
@@ -106,6 +103,7 @@ struct EditMoodView: View {
         }
     }
 
+    // MARK: - Slider logic
     func updateSliders(for adjustedMood: String, to newValue: Double) {
         var newMoodValues = moodValues
         newMoodValues[adjustedMood] = newValue
@@ -129,12 +127,27 @@ struct EditMoodView: View {
         moodValues = newMoodValues
     }
 
+    // MARK: - Save to Firestore
     func saveChanges() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
 
+        let moodInts = moodValues.mapValues { Int($0) }
+
+        let total = moodInts.values.reduce(0, +)
+        let posSum = positiveMoods.map { moodInts[$0] ?? 0 }.reduce(0, +)
+        let negSum = negativeMoods.map { moodInts[$0] ?? 0 }.reduce(0, +)
+        let neuSum = neutralMoods.map { moodInts[$0] ?? 0 }.reduce(0, +)
+
+        let percent: (Int) -> Int = { sum in
+            total > 0 ? Int(round(Double(sum) / Double(total) * 100)) : 0
+        }
+
         var updatedData: [String: Any] = [
             "timestamp": Timestamp(date: entry.timestamp),
-            "moods": moodValues.mapValues { Int($0) }
+            "moods": moodInts,
+            "positivePct": percent(posSum),
+            "negativePct": percent(negSum),
+            "neutralPct": percent(neuSum)
         ]
 
         if !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {

@@ -10,6 +10,10 @@ struct CalendarView: View {
     @State private var selectedEntry: MoodEntry?
     @State private var showDeleteAlert = false
     @State private var entryToDelete: MoodEntry?
+    let positiveMoods = ["joy", "calm", "inspired", "inLove", "gratitude", "pride", "hopeful", "energetic"]
+    let negativeMoods = ["sadness", "anger", "fear", "anxiety", "loneliness", "tiredness", "disappointment", "guilt"]
+    let neutralMoods  = ["boredom", "confusion", "emptiness", "apathy", "surprised", "mixedFeelings"]
+
 
     var body: some View {
         NavigationStack {
@@ -41,25 +45,40 @@ struct CalendarView: View {
                                     Text(entry.timestamp.formatted(date: .omitted, time: .shortened))
                                         .bold()
                                     Spacer()
-                                    Button {
-                                        selectedEntry = entry
-                                        showEditSheet = true
-                                    } label: {
-                                        Image(systemName: "pencil")
-                                            .foregroundColor(.blue)
-                                    }
-                                    Button {
-                                        entryToDelete = entry
-                                        showDeleteAlert = true
-                                    } label: {
-                                        Image(systemName: "trash")
-                                            .foregroundColor(.red)
+                                    HStack(spacing: 16) {
+                                        Button {
+                                            selectedEntry = entry
+                                            showEditSheet = true
+                                        } label: {
+                                            Image(systemName: "pencil")
+                                                .foregroundColor(.blue)
+                                        }
+                                        .buttonStyle(BorderlessButtonStyle()) // Prevents nested tap issues
+
+                                        Button {
+                                            entryToDelete = entry
+                                            showDeleteAlert = true
+                                        } label: {
+                                            Image(systemName: "trash")
+                                                .foregroundColor(.red)
+                                        }
+                                        .buttonStyle(BorderlessButtonStyle())
                                     }
                                 }
 
-                                ForEach(entry.moods.sorted(by: { $0.key < $1.key }), id: \.key) { mood, value in
-                                    Text("\(mood.capitalized): \(value)")
+                                let moods = entry.moods
+                                let total = moods.values.reduce(0, +)
+                                let posSum = positiveMoods.map { moods[$0] ?? 0 }.reduce(0, +)
+                                let negSum = negativeMoods.map { moods[$0] ?? 0 }.reduce(0, +)
+                                let neuSum = neutralMoods.map { moods[$0] ?? 0 }.reduce(0, +)
+
+                                let percent: (Int) -> Int = { sum in
+                                    total > 0 ? Int(round(Double(sum) / Double(total) * 100)) : 0
                                 }
+
+                                Text("Positive emotions: \(percent(posSum))%")
+                                Text("Negative emotions: \(percent(negSum))%")
+                                Text("Neutral emotions: \(percent(neuSum))%")
 
                                 if let note = entry.note, !note.isEmpty {
                                     Text("📝 \(note)")
@@ -70,6 +89,7 @@ struct CalendarView: View {
                             }
                             .padding(.vertical, 6)
                         }
+
                         .listStyle(PlainListStyle())
                         .frame(height: 220)
                     }

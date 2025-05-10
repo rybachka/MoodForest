@@ -18,8 +18,7 @@ struct AddMoodView: View {
     @State private var note: String = ""
     @State private var showSuccessMessage = false
     @Environment(\.dismiss) var dismiss
-    
-    // Collapsible control
+
     @State private var showPositive = false
     @State private var showNegative = false
     @State private var showNeutral = false
@@ -41,26 +40,23 @@ struct AddMoodView: View {
                             .bold()
                             .padding(.top)
 
-                        DisclosureGroup("Positive", isExpanded: $showPositive) {
+                        DisclosureGroup("Positive emotions", isExpanded: $showPositive) {
                             VStack(spacing: 12) {
                                 ForEach(positiveMoods, id: \.self, content: moodSlider)
                             }
-                        }
-                        .font(.headline)
+                        }.font(.headline)
 
-                        DisclosureGroup("Negative", isExpanded: $showNegative) {
+                        DisclosureGroup("Negative emotions", isExpanded: $showNegative) {
                             VStack(spacing: 12) {
                                 ForEach(negativeMoods, id: \.self, content: moodSlider)
                             }
-                        }
-                        .font(.headline)
+                        }.font(.headline)
 
-                        DisclosureGroup("Neutral", isExpanded: $showNeutral) {
+                        DisclosureGroup("Neutral emotions", isExpanded: $showNeutral) {
                             VStack(spacing: 12) {
                                 ForEach(neutralMoods, id: \.self, content: moodSlider)
                             }
-                        }
-                        .font(.headline)
+                        }.font(.headline)
 
                         Group {
                             Text("Note (optional)").font(.headline)
@@ -86,17 +82,15 @@ struct AddMoodView: View {
         }
     }
 
-    // MARK: - Mood categories
     let positiveMoods = ["joy", "calm", "inspired", "inLove", "gratitude", "pride", "hopeful", "energetic"]
     let negativeMoods = ["sadness", "anger", "fear", "anxiety", "loneliness", "tiredness", "disappointment", "guilt"]
     let neutralMoods  = ["boredom", "confusion", "emptiness", "apathy", "surprised", "mixedFeelings"]
 
-    // MARK: - Mood slider
     func moodSlider(_ mood: String) -> some View {
         VStack(alignment: .leading) {
             Text("\(formatMoodLabel(mood)): \(Int(moodValues[mood]!))")
             Slider(value: Binding(
-                get: { moodValues[mood]! },
+                get: { self.moodValues[mood]! },
                 set: { newValue in updateSliders(for: mood, to: newValue) }
             ), in: 0...100)
         }
@@ -110,7 +104,6 @@ struct AddMoodView: View {
         }
     }
 
-    // MARK: - Slider sum logic
     func updateSliders(for adjustedMood: String, to newValue: Double) {
         var newMoodValues = moodValues
         newMoodValues[adjustedMood] = newValue
@@ -134,30 +127,41 @@ struct AddMoodView: View {
         moodValues = newMoodValues
     }
 
-    // MARK: - Firestore
     func saveMood() {
         guard let user = Auth.auth().currentUser else { return }
 
-        let db = Firestore.firestore()
-        let moodData = moodValues.mapValues { Int($0) }
+        let moodInts = moodValues.mapValues { Int($0) }
+
+        let total = moodInts.values.reduce(0, +)
+        let posSum = positiveMoods.map { moodInts[$0] ?? 0 }.reduce(0, +)
+        let negSum = negativeMoods.map { moodInts[$0] ?? 0 }.reduce(0, +)
+        let neuSum = neutralMoods.map { moodInts[$0] ?? 0 }.reduce(0, +)
+
+        let percent: (Int) -> Int = { sum in
+            total > 0 ? Int(round(Double(sum) / Double(total) * 100)) : 0
+        }
 
         var entry: [String: Any] = [
             "timestamp": Timestamp(date: Date()),
-            "moods": moodData
+            "moods": moodInts,
+            "positivePct": percent(posSum),
+            "negativePct": percent(negSum),
+            "neutralPct": percent(neuSum)
         ]
 
         if !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             entry["note"] = note
         }
 
-        db.collection("users")
+        Firestore.firestore()
+            .collection("users")
             .document(user.uid)
             .collection("moods")
             .addDocument(data: entry) { error in
                 if let error = error {
                     print("❌ Error saving mood: \(error.localizedDescription)")
                 } else {
-                    print("✅ Mood saved to Firestore")
+                    print("✅ Mood with percentages saved to Firestore")
                     showSuccessMessage = true
 
                     DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
