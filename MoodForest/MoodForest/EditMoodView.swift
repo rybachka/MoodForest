@@ -11,6 +11,11 @@ struct EditMoodView: View {
     @State private var note: String = ""
     @State private var showSuccessMessage = false
 
+    // Expand/collapse control
+    @State private var showPositive = true
+    @State private var showNegative = false
+    @State private var showNeutral = false
+
     var body: some View {
         NavigationStack {
             VStack {
@@ -28,39 +33,26 @@ struct EditMoodView: View {
                             .bold()
                             .padding(.top)
 
-                        Group {
-                            Text("Positive").font(.headline).foregroundColor(.gray)
-                            moodSlider("joy")
-                            moodSlider("calm")
-                            moodSlider("inspired")
-                            moodSlider("inLove")
-                            moodSlider("gratitude")
-                            moodSlider("pride")
-                            moodSlider("hopeful")
-                            moodSlider("energetic")
+                        DisclosureGroup("Positive", isExpanded: $showPositive) {
+                            VStack(spacing: 12) {
+                                ForEach(positiveMoods, id: \.self, content: moodSlider)
+                            }
                         }
+                        .font(.headline)
 
-                        Group {
-                            Text("Negative").font(.headline).foregroundColor(.gray)
-                            moodSlider("sadness")
-                            moodSlider("anger")
-                            moodSlider("fear")
-                            moodSlider("anxiety")
-                            moodSlider("loneliness")
-                            moodSlider("tiredness")
-                            moodSlider("disappointment")
-                            moodSlider("guilt")
+                        DisclosureGroup("Negative", isExpanded: $showNegative) {
+                            VStack(spacing: 12) {
+                                ForEach(negativeMoods, id: \.self, content: moodSlider)
+                            }
                         }
+                        .font(.headline)
 
-                        Group {
-                            Text("Neutral").font(.headline).foregroundColor(.gray)
-                            moodSlider("boredom")
-                            moodSlider("confusion")
-                            moodSlider("emptiness")
-                            moodSlider("apathy")
-                            moodSlider("surprised")
-                            moodSlider("mixedFeelings")
+                        DisclosureGroup("Neutral", isExpanded: $showNeutral) {
+                            VStack(spacing: 12) {
+                                ForEach(neutralMoods, id: \.self, content: moodSlider)
+                            }
                         }
+                        .font(.headline)
 
                         Group {
                             Text("Note (optional)").font(.headline)
@@ -83,13 +75,18 @@ struct EditMoodView: View {
                     .padding()
                 }
             }
-            .navigationTitle("Edit Mood")
+            //.navigationTitle("Edit Mood")
             .onAppear {
                 moodValues = entry.moods.mapValues { Double($0) }
                 note = entry.note ?? ""
             }
         }
     }
+
+    // MARK: - Mood categories
+    let positiveMoods = ["joy", "calm", "inspired", "inLove", "gratitude", "pride", "hopeful", "energetic"]
+    let negativeMoods = ["sadness", "anger", "fear", "anxiety", "loneliness", "tiredness", "disappointment", "guilt"]
+    let neutralMoods  = ["boredom", "confusion", "emptiness", "apathy", "surprised", "mixedFeelings"]
 
     func moodSlider(_ mood: String) -> some View {
         VStack(alignment: .leading) {

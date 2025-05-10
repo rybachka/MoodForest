@@ -16,8 +16,13 @@ struct AddMoodView: View {
     ]
     
     @State private var note: String = ""
-    @Environment(\.dismiss) var dismiss
     @State private var showSuccessMessage = false
+    @Environment(\.dismiss) var dismiss
+    
+    // Collapsible control
+    @State private var showPositive = false
+    @State private var showNegative = false
+    @State private var showNeutral = false
 
     var body: some View {
         NavigationStack {
@@ -36,39 +41,26 @@ struct AddMoodView: View {
                             .bold()
                             .padding(.top)
 
-                        Group {
-                            Text("Positive").font(.headline).foregroundColor(.gray)
-                            moodSlider("joy")
-                            moodSlider("calm")
-                            moodSlider("inspired")
-                            moodSlider("inLove")
-                            moodSlider("gratitude")
-                            moodSlider("pride")
-                            moodSlider("hopeful")
-                            moodSlider("energetic")
+                        DisclosureGroup("Positive", isExpanded: $showPositive) {
+                            VStack(spacing: 12) {
+                                ForEach(positiveMoods, id: \.self, content: moodSlider)
+                            }
                         }
+                        .font(.headline)
 
-                        Group {
-                            Text("Negative").font(.headline).foregroundColor(.gray)
-                            moodSlider("sadness")
-                            moodSlider("anger")
-                            moodSlider("fear")
-                            moodSlider("anxiety")
-                            moodSlider("loneliness")
-                            moodSlider("tiredness")
-                            moodSlider("disappointment")
-                            moodSlider("guilt")
+                        DisclosureGroup("Negative", isExpanded: $showNegative) {
+                            VStack(spacing: 12) {
+                                ForEach(negativeMoods, id: \.self, content: moodSlider)
+                            }
                         }
+                        .font(.headline)
 
-                        Group {
-                            Text("Neutral").font(.headline).foregroundColor(.gray)
-                            moodSlider("boredom")
-                            moodSlider("confusion")
-                            moodSlider("emptiness")
-                            moodSlider("apathy")
-                            moodSlider("surprised")
-                            moodSlider("mixedFeelings")
+                        DisclosureGroup("Neutral", isExpanded: $showNeutral) {
+                            VStack(spacing: 12) {
+                                ForEach(neutralMoods, id: \.self, content: moodSlider)
+                            }
                         }
+                        .font(.headline)
 
                         Group {
                             Text("Note (optional)").font(.headline)
@@ -94,12 +86,18 @@ struct AddMoodView: View {
         }
     }
 
+    // MARK: - Mood categories
+    let positiveMoods = ["joy", "calm", "inspired", "inLove", "gratitude", "pride", "hopeful", "energetic"]
+    let negativeMoods = ["sadness", "anger", "fear", "anxiety", "loneliness", "tiredness", "disappointment", "guilt"]
+    let neutralMoods  = ["boredom", "confusion", "emptiness", "apathy", "surprised", "mixedFeelings"]
+
+    // MARK: - Mood slider
     func moodSlider(_ mood: String) -> some View {
         VStack(alignment: .leading) {
             Text("\(formatMoodLabel(mood)): \(Int(moodValues[mood]!))")
             Slider(value: Binding(
-                get: { self.moodValues[mood]! },
-                set: { newValue in self.updateSliders(for: mood, to: newValue) }
+                get: { moodValues[mood]! },
+                set: { newValue in updateSliders(for: mood, to: newValue) }
             ), in: 0...100)
         }
     }
@@ -112,6 +110,7 @@ struct AddMoodView: View {
         }
     }
 
+    // MARK: - Slider sum logic
     func updateSliders(for adjustedMood: String, to newValue: Double) {
         var newMoodValues = moodValues
         newMoodValues[adjustedMood] = newValue
@@ -135,6 +134,7 @@ struct AddMoodView: View {
         moodValues = newMoodValues
     }
 
+    // MARK: - Firestore
     func saveMood() {
         guard let user = Auth.auth().currentUser else { return }
 
