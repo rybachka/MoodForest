@@ -1,6 +1,7 @@
 import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
+import CoreLocation
 
 struct AddMoodView: View {
     @State private var moodValues: [String: Double] = [
@@ -14,11 +15,12 @@ struct AddMoodView: View {
         "boredom": 0, "confusion": 0, "emptiness": 0, "apathy": 0,
         "surprised": 0, "mixedFeelings": 0
     ]
-    
+
     @State private var note: String = ""
     @State private var showSuccessMessage = false
     @Environment(\.dismiss) var dismiss
 
+    @StateObject private var locationManager = LocationManager()
     @State private var showPositive = false
     @State private var showNegative = false
     @State private var showNeutral = false
@@ -78,6 +80,9 @@ struct AddMoodView: View {
                     }
                     .padding()
                 }
+            }
+            .onAppear {
+                locationManager.requestLocationPermission()
             }
         }
     }
@@ -149,6 +154,11 @@ struct AddMoodView: View {
             "neutralPct": percent(neuSum)
         ]
 
+        if let loc = locationManager.location {
+            entry["latitude"] = loc.coordinate.latitude
+            entry["longitude"] = loc.coordinate.longitude
+        }
+
         if !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             entry["note"] = note
         }
@@ -161,7 +171,7 @@ struct AddMoodView: View {
                 if let error = error {
                     print("❌ Error saving mood: \(error.localizedDescription)")
                 } else {
-                    print("✅ Mood with percentages saved to Firestore")
+                    print("✅ Mood saved to Firestore with location")
                     showSuccessMessage = true
 
                     DispatchQueue.main.asyncAfter(deadline: .now() + 3) {

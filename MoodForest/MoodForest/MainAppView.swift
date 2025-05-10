@@ -7,6 +7,7 @@ struct MainAppView: View {
     @State private var showAddMood = false
     @State private var showHistory = false
     @State private var showTree = false
+    @State private var showMap = false
 
     var body: some View {
         NavigationStack {
@@ -64,7 +65,19 @@ struct MainAppView: View {
                             .clipShape(Circle())
                             .shadow(radius: 4)
                     }
+                    Button {
+                                            showMap = true
+                                        } label: {
+                                            Image(systemName: "map.fill")
+                                                .font(.system(size: 30))
+                                                .padding()
+                                                .background(.blue)
+                                                .foregroundColor(.white)
+                                                .clipShape(Circle())
+                                                .shadow(radius: 4)
+                                        }
                 }
+                
 
                 Button {
                     showHistory = true
@@ -104,6 +117,9 @@ struct MainAppView: View {
             .sheet(isPresented: $showTree) {
                 MoodTreeView()
             }
+            .sheet(isPresented: $showMap) {
+                            MoodMapView() // 🗺️ New view
+                        }
         }
     }
 }
