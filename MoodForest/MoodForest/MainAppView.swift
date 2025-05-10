@@ -6,15 +6,17 @@ struct MainAppView: View {
     @State private var showCalendar = false
     @State private var showAddMood = false
     @State private var showHistory = false
+    @State private var showTree = false
 
     var body: some View {
         NavigationStack {
             VStack {
                 Text("Welcome to MoodForest!")
+
                 Button("Sign Out") {
                     auth.signOut()
                 }
-                
+
                 Spacer()
 
                 Text("Today is:")
@@ -49,18 +51,29 @@ struct MainAppView: View {
                             .clipShape(Circle())
                             .shadow(radius: 4)
                     }
+
+                    // 🌳 Mood Tree Button
+                    Button {
+                        showTree = true
+                    } label: {
+                        Image(systemName: "tree.fill")
+                            .font(.system(size: 30))
+                            .padding()
+                            .background(.green)
+                            .foregroundColor(.white)
+                            .clipShape(Circle())
+                            .shadow(radius: 4)
+                    }
                 }
-                Button(action: {
-                        showHistory = true
-                    }) {
-                        Image(systemName: "list.bullet.circle.fill")
-                            .resizable()
-                            .frame(width: 40, height: 40)
-                            .foregroundColor(.purple)
-                    }
-                    .sheet(isPresented: $showHistory) {
-                        MoodHistoryView()
-                    }
+
+                Button {
+                    showHistory = true
+                } label: {
+                    Image(systemName: "list.bullet.circle.fill")
+                        .resizable()
+                        .frame(width: 40, height: 40)
+                        .foregroundColor(.purple)
+                }
                 .padding(.bottom, 30)
             }
             .padding()
@@ -75,6 +88,7 @@ struct MainAppView: View {
                     }
                 }
             }
+
             .sheet(isPresented: $showProfile) {
                 ProfileView()
             }
@@ -83,6 +97,12 @@ struct MainAppView: View {
             }
             .sheet(isPresented: $showAddMood) {
                 AddMoodView()
+            }
+            .sheet(isPresented: $showHistory) {
+                MoodHistoryView()
+            }
+            .sheet(isPresented: $showTree) {
+                MoodTreeView()
             }
         }
     }
