@@ -1,10 +1,3 @@
-//
-//  LocationManager.swift
-//  MoodForest
-//
-//  Created by Mariia Rybak on 08.05.2025.
-//
-
 import Foundation
 import CoreLocation
 
@@ -13,11 +6,11 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     @Published var location: CLLocation?
     @Published var status: CLAuthorizationStatus?
-    
 
     override init() {
         super.init()
         locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
     }
 
     func requestLocationPermission() {
@@ -25,36 +18,38 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         locationManager.requestWhenInUseAuthorization()
     }
 
-
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        self.status = manager.authorizationStatus
+        let newStatus = manager.authorizationStatus
+        self.status = newStatus
 
-        switch manager.authorizationStatus {
+        switch newStatus {
         case .authorizedWhenInUse, .authorizedAlways:
+            print("✅ Location permission granted")
             locationManager.requestLocation()
-        case .denied, .restricted:
-            print("Location access denied or restricted.")
+        case .denied:
+            print("❌ Location access denied by user")
+        case .restricted:
+            print("⚠️ Location access is restricted")
         case .notDetermined:
-            print("Location permission not yet requested.")
+            print("🔄 Location permission not yet determined")
         @unknown default:
-            break
+            print("❓ Unknown authorization status")
         }
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        location = locations.first
-        if let loc = location {
-            print("Location updated: \(loc.coordinate.latitude), \(loc.coordinate.longitude)")
+        if let loc = locations.first {
+            location = loc
+            print("📍 Location updated: \(loc.coordinate.latitude), \(loc.coordinate.longitude)")
         }
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Location error: \(error.localizedDescription)")
-    }
-    
-    func isAuthorized() -> Bool {
-        let status = locationManager.authorizationStatus
-        return status == .authorizedWhenInUse || status == .authorizedAlways
+        print("🚫 Location error: \(error.localizedDescription)")
     }
 
+    func isAuthorized() -> Bool {
+        let currentStatus = locationManager.authorizationStatus
+        return currentStatus == .authorizedWhenInUse || currentStatus == .authorizedAlways
+    }
 }

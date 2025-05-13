@@ -10,6 +10,8 @@ struct MoodEntry: Identifiable, Hashable {
     var positivePct: Int?
     var negativePct: Int?
     var neutralPct: Int?
+    
+
 
     static func == (lhs: MoodEntry, rhs: MoodEntry) -> Bool {
         lhs.id == rhs.id
@@ -27,6 +29,7 @@ struct MoodHistoryView: View {
     @State private var selectedEntry: MoodEntry?
     @State private var showDeleteAlert = false
     @State private var entryToDelete: MoodEntry?
+    
 
     var body: some View {
         NavigationStack {

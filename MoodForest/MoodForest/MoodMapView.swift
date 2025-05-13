@@ -84,12 +84,8 @@ struct MoodMapView: View {
     }
 
     func loadMoodLocations() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-
         Firestore.firestore()
-            .collection("users")
-            .document(uid)
-            .collection("moods")
+            .collection("moods") // ✅ Common collection for all users
             .order(by: "timestamp", descending: true)
             .getDocuments { snapshot, error in
                 guard let docs = snapshot?.documents else { return }
@@ -124,6 +120,7 @@ struct MoodMapView: View {
                 }
             }
     }
+
 
     func colorFor(positive: Int, neutral: Int, negative: Int) -> Color {
         if positive >= neutral && positive >= negative {

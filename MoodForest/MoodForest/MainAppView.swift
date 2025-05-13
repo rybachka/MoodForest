@@ -8,6 +8,11 @@ struct MainAppView: View {
     @State private var showHistory = false
     @State private var showTree = false
     @State private var showMap = false
+    @State private var refreshTrigger = false
+
+
+    
+
 
     var body: some View {
         NavigationStack {
@@ -120,6 +125,7 @@ struct MainAppView: View {
             .sheet(isPresented: $showMap) {
                             MoodMapView() // 🗺️ New view
                         }
+            
         }
     }
 }

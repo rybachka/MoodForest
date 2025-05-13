@@ -151,7 +151,8 @@ struct AddMoodView: View {
             "moods": moodInts,
             "positivePct": percent(posSum),
             "negativePct": percent(negSum),
-            "neutralPct": percent(neuSum)
+            "neutralPct": percent(neuSum),
+            "uid": user.uid  // Useful for future filtering in global collection
         ]
 
         if let loc = locationManager.location {
@@ -163,15 +164,20 @@ struct AddMoodView: View {
             entry["note"] = note
         }
 
-        Firestore.firestore()
-            .collection("users")
+        let db = Firestore.firestore()
+
+        // 🔄 Save to global moods collection (for map)
+        db.collection("moods").addDocument(data: entry)
+
+        // 🔒 Save to current user's collection (for mood history)
+        db.collection("users")
             .document(user.uid)
             .collection("moods")
             .addDocument(data: entry) { error in
                 if let error = error {
                     print("❌ Error saving mood: \(error.localizedDescription)")
                 } else {
-                    print("✅ Mood saved to Firestore with location")
+                    print("✅ Mood saved to Firestore (global and user collection)")
                     showSuccessMessage = true
 
                     DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
@@ -180,4 +186,5 @@ struct AddMoodView: View {
                 }
             }
     }
+
 }

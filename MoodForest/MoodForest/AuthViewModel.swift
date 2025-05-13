@@ -1,5 +1,4 @@
 import FirebaseFirestore
-//import FirebaseFirestoreSwift
 import FirebaseAuth
 
 class AuthViewModel: ObservableObject {
@@ -10,19 +9,27 @@ class AuthViewModel: ObservableObject {
 
     init() {
         self.user = Auth.auth().currentUser
+
         if let user = user {
             checkUserProfileExists(uid: user.uid)
+        } else {
+            self.isLoading = false // ✅ Stop loading if no user is logged in
         }
     }
 
     func register(email: String, password: String) {
         self.errorMessage = nil
+        self.isLoading = true // ✅ Start loading on register
         Auth.auth().createUser(withEmail: email, password: password) { result, error in
-            if let error = error {
-                self.errorMessage = error.localizedDescription
-            } else if let user = result?.user {
-                self.user = user
-                self.isProfileComplete = false
+            DispatchQueue.main.async {
+                if let error = error {
+                    self.errorMessage = error.localizedDescription
+                    self.isLoading = false // ✅ Stop loading on failure
+                } else if let user = result?.user {
+                    self.user = user
+                    self.isProfileComplete = false
+                    self.isLoading = false // ✅ Stop loading after successful registration
+                }
             }
         }
     }
@@ -31,12 +38,14 @@ class AuthViewModel: ObservableObject {
         self.errorMessage = nil
         self.isLoading = true
         Auth.auth().signIn(withEmail: email, password: password) { result, error in
-            if let error = error {
-                self.errorMessage = error.localizedDescription
-                self.isLoading = false
-            } else if let user = result?.user {
-                self.user = user
-                self.checkUserProfileExists(uid: user.uid)
+            DispatchQueue.main.async {
+                if let error = error {
+                    self.errorMessage = error.localizedDescription
+                    self.isLoading = false
+                } else if let user = result?.user {
+                    self.user = user
+                    self.checkUserProfileExists(uid: user.uid)
+                }
             }
         }
     }
@@ -44,15 +53,12 @@ class AuthViewModel: ObservableObject {
     func checkUserProfileExists(uid: String) {
         let docRef = Firestore.firestore().collection("users").document(uid)
         docRef.getDocument { document, error in
-            if let document = document, document.exists {
-                self.isProfileComplete = true
-            } else {
-                self.isProfileComplete = false
+            DispatchQueue.main.async {
+                self.isProfileComplete = (document?.exists ?? false)
+                self.isLoading = false // ✅ Always stop loading after check
             }
-            self.isLoading = false
         }
     }
-
 
     func signOut() {
         try? Auth.auth().signOut()

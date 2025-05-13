@@ -129,7 +129,7 @@ struct EditMoodView: View {
 
     // MARK: - Save to Firestore
     func saveChanges() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
+        guard let user = Auth.auth().currentUser else { return }
 
         let moodInts = moodValues.mapValues { Int($0) }
 
@@ -147,22 +147,31 @@ struct EditMoodView: View {
             "moods": moodInts,
             "positivePct": percent(posSum),
             "negativePct": percent(negSum),
-            "neutralPct": percent(neuSum)
+            "neutralPct": percent(neuSum),
+            "uid": user.uid
         ]
 
         if !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             updatedData["note"] = note
         }
 
-        Firestore.firestore()
-            .collection("users").document(uid)
-            .collection("moods").document(entry.id)
-            .setData(updatedData) { error in
+        // Save to both global and user-specific collections
+        let db = Firestore.firestore()
+
+        // 🌍 Global collection update
+        db.collection("moods").document(entry.id).setData(updatedData, merge: true)
+
+        // 👤 User-specific collection update
+        db.collection("users")
+            .document(user.uid)
+            .collection("moods")
+            .document(entry.id)
+            .setData(updatedData, merge: true) { error in
                 if let error = error {
                     print("❌ Error updating mood: \(error.localizedDescription)")
                 } else {
+                    print("✅ Mood updated in both global and user collections")
                     showSuccessMessage = true
-                    print("✅ Mood updated")
 
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                         showSuccessMessage = false
@@ -172,4 +181,5 @@ struct EditMoodView: View {
                 }
             }
     }
+
 }
