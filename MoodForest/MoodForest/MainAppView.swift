@@ -2,17 +2,22 @@ import SwiftUI
 
 struct MainAppView: View {
     @EnvironmentObject var auth: AuthViewModel
+
     @State private var showProfile = false
     @State private var showCalendar = false
     @State private var showAddMood = false
     @State private var showHistory = false
     @State private var showTree = false
     @State private var showMap = false
-    @State private var refreshTrigger = false
 
+    // Support logic
+    @State private var showAngerSupportAlert = false
+    @State private var showBoxBreath = false
+    @State private var supportTriggered = false
 
-    
-
+    @State private var showSadnessSupportAlert = false
+    @State private var showGifsView = false
+    @State private var sadnessSupportTriggered = false
 
     var body: some View {
         NavigationStack {
@@ -36,7 +41,6 @@ struct MainAppView: View {
                 Spacer()
 
                 HStack(spacing: 40) {
-                    // ➕ Add Mood Button
                     Button {
                         showAddMood = true
                     } label: {
@@ -45,7 +49,6 @@ struct MainAppView: View {
                             .foregroundColor(.purple)
                     }
 
-                    // 📅 Calendar Button
                     Button {
                         showCalendar = true
                     } label: {
@@ -58,7 +61,6 @@ struct MainAppView: View {
                             .shadow(radius: 4)
                     }
 
-                    // 🌳 Mood Tree Button
                     Button {
                         showTree = true
                     } label: {
@@ -70,19 +72,19 @@ struct MainAppView: View {
                             .clipShape(Circle())
                             .shadow(radius: 4)
                     }
+
                     Button {
-                                            showMap = true
-                                        } label: {
-                                            Image(systemName: "map.fill")
-                                                .font(.system(size: 30))
-                                                .padding()
-                                                .background(.blue)
-                                                .foregroundColor(.white)
-                                                .clipShape(Circle())
-                                                .shadow(radius: 4)
-                                        }
+                        showMap = true
+                    } label: {
+                        Image(systemName: "map.fill")
+                            .font(.system(size: 30))
+                            .padding()
+                            .background(.blue)
+                            .foregroundColor(.white)
+                            .clipShape(Circle())
+                            .shadow(radius: 4)
+                    }
                 }
-                
 
                 Button {
                     showHistory = true
@@ -107,14 +109,35 @@ struct MainAppView: View {
                 }
             }
 
+            // Sheets
             .sheet(isPresented: $showProfile) {
                 ProfileView()
             }
             .sheet(isPresented: $showCalendar) {
                 CalendarView()
             }
-            .sheet(isPresented: $showAddMood) {
-                AddMoodView()
+            .sheet(isPresented: $showAddMood, onDismiss: {
+                if supportTriggered {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        showAngerSupportAlert = true
+                        supportTriggered = false
+                    }
+                }
+                if sadnessSupportTriggered {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        showSadnessSupportAlert = true
+                        sadnessSupportTriggered = false
+                    }
+                }
+            }) {
+                AddMoodView(
+                    onHighAnger: {
+                        supportTriggered = true
+                    },
+                    onHighSadness: {
+                        sadnessSupportTriggered = true
+                    }
+                )
             }
             .sheet(isPresented: $showHistory) {
                 MoodHistoryView()
@@ -123,9 +146,38 @@ struct MainAppView: View {
                 MoodTreeView()
             }
             .sheet(isPresented: $showMap) {
-                            MoodMapView() // 🗺️ New view
-                        }
-            
+                MoodMapView()
+            }
+
+            .alert("Support for Anger", isPresented: $showAngerSupportAlert) {
+                Button("Try Box Breathing") {
+                    showBoxBreath = true
+                }
+                Button("No, thanks", role: .cancel) {}
+            } message: {
+                Text("""
+                Tell yourself: “I’m angry right now, and that’s okay.”
+                Physically remove yourself from the situation, even if just for a few minutes.
+
+                Do you want to try Box Breathing now?
+                """)
+            }
+
+            .alert("Feeling Sad?", isPresented: $showSadnessSupportAlert) {
+                Button("Yes, show me GIFs!") {
+                    showGifsView = true
+                }
+                Button("No, thanks", role: .cancel) {}
+            } message: {
+                Text("Do you want to watch funny GIFs?")
+            }
+
+            .sheet(isPresented: $showBoxBreath) {
+                BoxBreathView()
+            }
+            .sheet(isPresented: $showGifsView) {
+                GifsView()
+            }
         }
     }
 }

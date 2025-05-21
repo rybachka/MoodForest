@@ -4,14 +4,14 @@ import FirebaseFirestore
 import CoreLocation
 
 struct AddMoodView: View {
+    var onHighAnger: (() -> Void)? = nil
+    var onHighSadness: (() -> Void)? = nil
+
     @State private var moodValues: [String: Double] = [
-        // Positive
         "joy": 12.5, "calm": 12.5, "inspired": 12.5, "inLove": 12.5,
         "gratitude": 12.5, "pride": 12.5, "hopeful": 12.5, "energetic": 12.5,
-        // Negative
         "sadness": 0, "anger": 0, "fear": 0, "anxiety": 0,
         "loneliness": 0, "tiredness": 0, "disappointment": 0, "guilt": 0,
-        // Neutral
         "boredom": 0, "confusion": 0, "emptiness": 0, "apathy": 0,
         "surprised": 0, "mixedFeelings": 0
     ]
@@ -24,6 +24,10 @@ struct AddMoodView: View {
     @State private var showPositive = false
     @State private var showNegative = false
     @State private var showNeutral = false
+
+    let positiveMoods = ["joy", "calm", "inspired", "inLove", "gratitude", "pride", "hopeful", "energetic"]
+    let negativeMoods = ["sadness", "anger", "fear", "anxiety", "loneliness", "tiredness", "disappointment", "guilt"]
+    let neutralMoods  = ["boredom", "confusion", "emptiness", "apathy", "surprised", "mixedFeelings"]
 
     var body: some View {
         NavigationStack {
@@ -43,22 +47,16 @@ struct AddMoodView: View {
                             .padding(.top)
 
                         DisclosureGroup("Positive emotions", isExpanded: $showPositive) {
-                            VStack(spacing: 12) {
-                                ForEach(positiveMoods, id: \.self, content: moodSlider)
-                            }
-                        }.font(.headline)
+                            ForEach(positiveMoods, id: \.self, content: moodSlider)
+                        }
 
                         DisclosureGroup("Negative emotions", isExpanded: $showNegative) {
-                            VStack(spacing: 12) {
-                                ForEach(negativeMoods, id: \.self, content: moodSlider)
-                            }
-                        }.font(.headline)
+                            ForEach(negativeMoods, id: \.self, content: moodSlider)
+                        }
 
                         DisclosureGroup("Neutral emotions", isExpanded: $showNeutral) {
-                            VStack(spacing: 12) {
-                                ForEach(neutralMoods, id: \.self, content: moodSlider)
-                            }
-                        }.font(.headline)
+                            ForEach(neutralMoods, id: \.self, content: moodSlider)
+                        }
 
                         Group {
                             Text("Note (optional)").font(.headline)
@@ -67,16 +65,14 @@ struct AddMoodView: View {
                                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.4)))
                         }
 
-                        Button(action: saveMood) {
-                            Text("Save Mood")
-                                .fontWeight(.semibold)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(12)
-                        }
-                        .padding(.top, 10)
+                        Button("Save Mood", action: saveMood)
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                            .padding(.top, 10)
                     }
                     .padding()
                 }
@@ -87,15 +83,11 @@ struct AddMoodView: View {
         }
     }
 
-    let positiveMoods = ["joy", "calm", "inspired", "inLove", "gratitude", "pride", "hopeful", "energetic"]
-    let negativeMoods = ["sadness", "anger", "fear", "anxiety", "loneliness", "tiredness", "disappointment", "guilt"]
-    let neutralMoods  = ["boredom", "confusion", "emptiness", "apathy", "surprised", "mixedFeelings"]
-
     func moodSlider(_ mood: String) -> some View {
         VStack(alignment: .leading) {
             Text("\(formatMoodLabel(mood)): \(Int(moodValues[mood]!))")
             Slider(value: Binding(
-                get: { self.moodValues[mood]! },
+                get: { moodValues[mood]! },
                 set: { newValue in updateSliders(for: mood, to: newValue) }
             ), in: 0...100)
         }
@@ -138,17 +130,15 @@ struct AddMoodView: View {
         let moodInts = moodValues.mapValues { Int($0) }
 
         let total = moodInts.values.reduce(0, +)
-        let posSum = positiveMoods.map { moodInts[$0] ?? 0 }.reduce(0, +)
-        let negSum = negativeMoods.map { moodInts[$0] ?? 0 }.reduce(0, +)
-        let neuSum = neutralMoods.map { moodInts[$0] ?? 0 }.reduce(0, +)
-
         let percent: (Int) -> Int = { sum in
             total > 0 ? Int(round(Double(sum) / Double(total) * 100)) : 0
         }
 
-        // ✅ Create consistent ID for global and user collections
-        let id = UUID().uuidString
+        let posSum = positiveMoods.map { moodInts[$0] ?? 0 }.reduce(0, +)
+        let negSum = negativeMoods.map { moodInts[$0] ?? 0 }.reduce(0, +)
+        let neuSum = neutralMoods.map { moodInts[$0] ?? 0 }.reduce(0, +)
 
+        let id = UUID().uuidString
         var entry: [String: Any] = [
             "id": id,
             "timestamp": Timestamp(date: Date()),
@@ -170,10 +160,7 @@ struct AddMoodView: View {
 
         let db = Firestore.firestore()
 
-        // 🌍 Save to global mood collection with specific ID
         db.collection("moods").document(id).setData(entry)
-
-        // 👤 Save to user's private collection with same ID
         db.collection("users")
             .document(user.uid)
             .collection("moods")
@@ -182,15 +169,22 @@ struct AddMoodView: View {
                 if let error = error {
                     print("❌ Error saving mood: \(error.localizedDescription)")
                 } else {
-                    print("✅ Mood saved to Firestore (global and user collection)")
                     showSuccessMessage = true
+                    print("✅ Mood saved to Firestore")
 
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    let angerLevel = moodInts["anger"] ?? 0
+                    let sadnessLevel = moodInts["sadness"] ?? 0
+
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        if angerLevel > 50 {
+                            onHighAnger?()
+                        }
+                        if sadnessLevel > 50 {
+                            onHighSadness?()
+                        }
                         dismiss()
                     }
                 }
             }
     }
-
-
 }
