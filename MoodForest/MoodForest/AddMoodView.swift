@@ -146,13 +146,17 @@ struct AddMoodView: View {
             total > 0 ? Int(round(Double(sum) / Double(total) * 100)) : 0
         }
 
+        // ✅ Create consistent ID for global and user collections
+        let id = UUID().uuidString
+
         var entry: [String: Any] = [
+            "id": id,
             "timestamp": Timestamp(date: Date()),
             "moods": moodInts,
             "positivePct": percent(posSum),
             "negativePct": percent(negSum),
             "neutralPct": percent(neuSum),
-            "uid": user.uid  // Useful for future filtering in global collection
+            "uid": user.uid
         ]
 
         if let loc = locationManager.location {
@@ -166,14 +170,15 @@ struct AddMoodView: View {
 
         let db = Firestore.firestore()
 
-        // 🔄 Save to global moods collection (for map)
-        db.collection("moods").addDocument(data: entry)
+        // 🌍 Save to global mood collection with specific ID
+        db.collection("moods").document(id).setData(entry)
 
-        // 🔒 Save to current user's collection (for mood history)
+        // 👤 Save to user's private collection with same ID
         db.collection("users")
             .document(user.uid)
             .collection("moods")
-            .addDocument(data: entry) { error in
+            .document(id)
+            .setData(entry) { error in
                 if let error = error {
                     print("❌ Error saving mood: \(error.localizedDescription)")
                 } else {
@@ -186,5 +191,6 @@ struct AddMoodView: View {
                 }
             }
     }
+
 
 }
