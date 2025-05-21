@@ -1,1 +1,3 @@
 GoogleService-Info.plist
+# Don't track the secrets file
+Secrets.plist

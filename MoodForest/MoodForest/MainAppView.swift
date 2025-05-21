@@ -19,6 +19,8 @@ struct MainAppView: View {
     @State private var showGifsView = false
     @State private var sadnessSupportTriggered = false
 
+    @State private var showSupportMenu = false
+
     var body: some View {
         NavigationStack {
             VStack {
@@ -40,12 +42,12 @@ struct MainAppView: View {
 
                 Spacer()
 
-                HStack(spacing: 40) {
+                HStack(spacing: 30) {
                     Button {
                         showAddMood = true
                     } label: {
                         Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 40))
+                            .font(.system(size: 30))
                             .foregroundColor(.purple)
                     }
 
@@ -84,6 +86,19 @@ struct MainAppView: View {
                             .clipShape(Circle())
                             .shadow(radius: 4)
                     }
+
+                    // ❤️ Support Menu
+                    Button {
+                        showSupportMenu = true
+                    } label: {
+                        Image(systemName: "heart.circle.fill")
+                            .font(.system(size: 30))
+                            .padding()
+                            .background(.red)
+                            .foregroundColor(.white)
+                            .clipShape(Circle())
+                            .shadow(radius: 4)
+                    }
                 }
 
                 Button {
@@ -110,12 +125,15 @@ struct MainAppView: View {
             }
 
             // Sheets
-            .sheet(isPresented: $showProfile) {
-                ProfileView()
-            }
-            .sheet(isPresented: $showCalendar) {
-                CalendarView()
-            }
+            .sheet(isPresented: $showProfile) { ProfileView() }
+            .sheet(isPresented: $showCalendar) { CalendarView() }
+            .sheet(isPresented: $showHistory) { MoodHistoryView() }
+            .sheet(isPresented: $showTree) { MoodTreeView() }
+            .sheet(isPresented: $showMap) { MoodMapView() }
+            .sheet(isPresented: $showBoxBreath) { BoxBreathView() }
+            .sheet(isPresented: $showGifsView) { GifsView() }
+
+            // AddMood logic
             .sheet(isPresented: $showAddMood, onDismiss: {
                 if supportTriggered {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
@@ -131,36 +149,19 @@ struct MainAppView: View {
                 }
             }) {
                 AddMoodView(
-                    onHighAnger: {
-                        supportTriggered = true
-                    },
-                    onHighSadness: {
-                        sadnessSupportTriggered = true
-                    }
+                    onHighAnger: { supportTriggered = true },
+                    onHighSadness: { sadnessSupportTriggered = true }
                 )
             }
-            .sheet(isPresented: $showHistory) {
-                MoodHistoryView()
-            }
-            .sheet(isPresented: $showTree) {
-                MoodTreeView()
-            }
-            .sheet(isPresented: $showMap) {
-                MoodMapView()
-            }
 
+            // Alerts
             .alert("Support for Anger", isPresented: $showAngerSupportAlert) {
                 Button("Try Box Breathing") {
                     showBoxBreath = true
                 }
                 Button("No, thanks", role: .cancel) {}
             } message: {
-                Text("""
-                Tell yourself: “I’m angry right now, and that’s okay.”
-                Physically remove yourself from the situation, even if just for a few minutes.
-
-                Do you want to try Box Breathing now?
-                """)
+                Text("Tell yourself: “I’m angry right now, and that’s okay.”\nPhysically remove yourself from the situation.\nDo you want to try Box Breathing now?")
             }
 
             .alert("Feeling Sad?", isPresented: $showSadnessSupportAlert) {
@@ -172,11 +173,17 @@ struct MainAppView: View {
                 Text("Do you want to watch funny GIFs?")
             }
 
-            .sheet(isPresented: $showBoxBreath) {
-                BoxBreathView()
-            }
-            .sheet(isPresented: $showGifsView) {
-                GifsView()
+            // Support menu action sheet
+            .actionSheet(isPresented: $showSupportMenu) {
+                ActionSheet(
+                    title: Text("Support Tools"),
+                    message: Text("Choose how you'd like to feel better 💙"),
+                    buttons: [
+                        .default(Text("Box Breathing")) { showBoxBreath = true },
+                        .default(Text("Funny GIFs")) { showGifsView = true },
+                        .cancel()
+                    ]
+                )
             }
         }
     }

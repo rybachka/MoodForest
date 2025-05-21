@@ -15,7 +15,11 @@ struct GIFWebView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
-        let request = URLRequest(url: gifURL)
-        uiView.load(request)
+        let html = """
+        <html><body style="margin:0;padding:0;background:transparent;">
+        <img src="\(gifURL.absoluteString)" style="width:100%;height:auto;" />
+        </body></html>
+        """
+        uiView.loadHTMLString(html, baseURL: nil)
     }
 }
