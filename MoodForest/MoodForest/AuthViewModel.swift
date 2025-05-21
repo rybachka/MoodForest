@@ -6,6 +6,7 @@ class AuthViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var isProfileComplete = false
     @Published var isLoading = true
+    
 
     init() {
         self.user = Auth.auth().currentUser

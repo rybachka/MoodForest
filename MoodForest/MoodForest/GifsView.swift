@@ -116,4 +116,13 @@ struct Secrets {
         }
         return key
     }
+
+    static var newsApiKey: String {
+        guard let path = Bundle.main.path(forResource: "Secrets", ofType: "plist"),
+              let dict = NSDictionary(contentsOfFile: path),
+              let key = dict["NEWS_API_KEY"] as? String else {
+            fatalError("NEWS_API_KEY not found in Secrets.plist")
+        }
+        return key
+    }
 }

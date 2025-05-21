@@ -12,6 +12,14 @@ struct AddMoodView: View {
     var onHighDisappointment: (() -> Void)? = nil
     var onHighGuilt: (() -> Void)? = nil
     var onHighTiredness: (() -> Void)? = nil
+    var onHighBoredom: (() -> Void)? = nil
+//    var onHighConfusion: (() -> Void)? = nil
+//    var onHighEmptiness: (() -> Void)? = nil
+//    var onHighSurprised: (() -> Void)? = nil
+//    var onHighMixedFeelings: (() -> Void)? = nil
+
+
+
 
 
 
@@ -201,6 +209,16 @@ struct AddMoodView: View {
                     let disappointmentLevel = moodInts["disappointment"] ?? 0
                     let guiltLevel = moodInts["guilt"] ?? 0
                     let tirednessLevel = moodInts["tiredness"] ?? 0
+                    let boredomLevel = moodInts["boredom"] ?? 0
+//                    let confusionLevel = moodInts["confusion"] ?? 0
+//                    let emptinessLevel = moodInts["emptiness"] ?? 0
+//                    let surprisedLevel = moodInts["surprised"] ?? 0
+//                    let mixedFeelingsLevel = moodInts["mixedFeelings"] ?? 0
+
+
+
+                    
+
 
 
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
@@ -212,6 +230,23 @@ struct AddMoodView: View {
                         if disappointmentLevel > 50 { onHighDisappointment?() }
                         if guiltLevel > 50 { onHighGuilt?() }
                         if tirednessLevel > 50 { onHighTiredness?() }
+                        if boredomLevel > 50 { onHighBoredom?() }
+//                        if confusionLevel > 50 {
+//                            onHighConfusion?()
+//                        }
+//                        if emptinessLevel > 50 {
+//                            onHighEmptiness?()
+//                        }
+//                        if surprisedLevel > 50 {
+//                            onHighSurprised?()
+//                        }
+//                        if mixedFeelingsLevel > 50 {
+//                            onHighMixedFeelings?()
+//                        }
+
+
+
+
 
 
                         dismiss()

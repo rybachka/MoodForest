@@ -12,7 +12,7 @@ struct ProfileView: View {
     @State private var showLocationAlreadyGrantedAlert = false
     @State private var locationAlertMessage: String? = nil
     @State private var showLocationAlert = false
-
+    @EnvironmentObject var auth: AuthViewModel
 
 
     @Environment(\.dismiss) var dismiss
@@ -78,7 +78,9 @@ struct ProfileView: View {
                 .background(Color.blue)
                 .foregroundColor(.white)
                 .cornerRadius(10)
-
+                Button("Sign Out") {
+                    auth.signOut()
+                }
                 Spacer()
             }
             .padding()
